@@ -1,37 +1,10 @@
 from typing import List
 from threading import Thread
-import time
-import os
-
 import cv2
 import numpy as np
-import pandas as pd
 
+from utils.data_reader import DataReader
 
-class FrameReader:
-    def __init__(self, directory: str):
-        # get all the frames from a video
-        self._frames = []
-        self._cap = cv2.VideoCapture(os.path.join(directory, "output.avi"))
-        self._read_thread = Thread(target=self._read_frames).start()
-
-        # TODO load the imu data
-        pass
-
-        # wait until one frame has appeared
-        while len(self._frames) == 0:
-            time.sleep(0.0001)
-
-    @property
-    def frames(self) -> List:
-        return self._frames
-
-    def _read_frames(self):
-        while True:
-            got_frame, frame = self._cap.read()
-            if not got_frame:
-                break
-            self._frames.append(frame)
 
 def main():
     # stuff
@@ -44,7 +17,7 @@ def main():
     markerLength = 0.08  # meters
 
     # read video
-    reader = FrameReader("data/1667355041/")
+    reader = DataReader("data/1667355041/")
     
     for frame in reader.frames:
     # detect marker!!!
@@ -53,11 +26,26 @@ def main():
         cv2.aruco.drawDetectedMarkers(frame, corners, ids, borderColor=(0,0,255))
         rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, markerLength, K, None)
 
+        if rvecs is None or tvecs is None:
+            cv2.imshow("window", frame)
+            if cv2.waitKey(1) == ord('q'):
+                break
+            continue
+
+        # only care about 1 marker
+        rvec = rvecs[0]
+        tvec = tvecs[0]
+
+        cv2.drawFrameAxes(frame, K, None, rvec, tvec, markerLength)
+
+        # make a transform
         
 
-        cv2.imshow("hello", frame)
+        cv2.imshow("window", frame)
         if cv2.waitKey(1) == ord('q'):
             break
+
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()

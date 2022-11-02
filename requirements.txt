@@ -1,4 +1,3 @@
-depthai
+depthai==2.18.0
 opencv-contrib-python
 numpy
-pandas
