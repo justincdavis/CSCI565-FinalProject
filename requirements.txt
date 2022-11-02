@@ -1,0 +1,4 @@
+depthai
+opencv-contrib-python
+numpy
+pandas
